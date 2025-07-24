@@ -30,6 +30,11 @@ class DateRange
         return $date >= $this->start && $date <= $this->end;
     }
 
+    public function overlaps(DateRange $other): bool
+    {
+        return $this->start <= $other->end && $other->start <= $this->end;
+    }
+
     public function getStart(): DateTimeInterface
     {
         return $this->start;
