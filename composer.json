@@ -8,6 +8,13 @@
             "Ogzhncrt\\DateRangeHelper\\": "src/"
         }
     },
+    "keywords": [
+        "date",
+        "range",
+        "date-range",
+        "date-range-helper",
+        "php"
+    ],
     "authors": [
         {
             "name": "Oguzhan Cerit"
