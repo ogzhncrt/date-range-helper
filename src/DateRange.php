@@ -15,6 +15,11 @@ class DateRange
         $this->end = $end;
     }
 
+    public static function createFromObjects(\DateTimeInterface $start, \DateTimeInterface $end): self
+    {
+        return new self($start, $end);
+    }
+
     public static function from(string $start): self
     {
         return new self(new \DateTimeImmutable($start), new \DateTimeImmutable($start));
