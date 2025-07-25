@@ -35,6 +35,17 @@ class DateRange
         return $this->start <= $other->end && $other->start <= $this->end;
     }
 
+    public function shift(int $days): self
+    {
+        $intervalSpec = ($days >= 0 ? '+' : '') . $days . ' days';
+
+        $newStart = $this->start->modify($intervalSpec);
+        $newEnd = $this->end->modify($intervalSpec);
+
+        return new self($newStart, $newEnd);
+    }
+
+
     public function getStart(): DateTimeInterface
     {
         return $this->start;

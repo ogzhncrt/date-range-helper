@@ -47,4 +47,23 @@ class DateRangeTest extends TestCase
         $this->assertTrue($b->overlaps($a));
     }
 
+    public function testShiftForward()
+    {
+        $range = DateRange::from('2024-01-01')->to('2024-01-10');
+        $shifted = $range->shift(3);
+
+        $this->assertEquals('2024-01-04', $shifted->getStart()->format('Y-m-d'));
+        $this->assertEquals('2024-01-13', $shifted->getEnd()->format('Y-m-d'));
+    }
+
+    public function testShiftBackward()
+    {
+        $range = DateRange::from('2024-01-01')->to('2024-01-10');
+        $shifted = $range->shift(-2);
+
+        $this->assertEquals('2023-12-30', $shifted->getStart()->format('Y-m-d'));
+        $this->assertEquals('2024-01-08', $shifted->getEnd()->format('Y-m-d'));
+    }
+
+
 }
