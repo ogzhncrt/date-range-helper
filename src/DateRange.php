@@ -45,6 +45,12 @@ class DateRange
         return new self($newStart, $newEnd);
     }
 
+    public function durationInDays(): int
+    {
+        return (int) $this->start->diff($this->end)->format('%a') + 1;
+    }
+
+
 
     public function getStart(): DateTimeInterface
     {

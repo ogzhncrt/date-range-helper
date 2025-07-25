@@ -65,5 +65,17 @@ class DateRangeTest extends TestCase
         $this->assertEquals('2024-01-08', $shifted->getEnd()->format('Y-m-d'));
     }
 
+    public function testDurationInDaysForMultipleDays()
+    {
+        $range = DateRange::from('2024-01-01')->to('2024-01-10');
+        $this->assertEquals(10, $range->durationInDays());
+    }
+
+    public function testDurationInDaysForSingleDay()
+    {
+        $range = DateRange::from('2024-05-05')->to('2024-05-05');
+        $this->assertEquals(1, $range->durationInDays());
+    }
+
 
 }
