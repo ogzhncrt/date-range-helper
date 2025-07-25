@@ -1,25 +1,111 @@
-# Date Range Helper 📅
+# 📅 Date Range Helper
 
-A small PHP utility for working with date ranges in a clean, readable way.
+A lightweight PHP library for working with date ranges in an elegant and immutable way.  
+Includes powerful utilities for comparing, shifting, merging, and analyzing ranges.
 
-## Install
+---
+
+## ✅ Installation
 
 ```bash
 composer require ogzhncrt/date-range-helper
 ```
 
-## Usage
+---
+
+## 🧠 Features
+
+- Immutable `DateRange` class
+- Range comparison (`contains`, `overlaps`)
+- Range math (`shift`, `durationInDays`)
+- Utility class `DateRangeUtils` for sorting & merging ranges
+
+---
+
+## 🚀 Usage
+
+### ✨ Basic Creation
+
 ```php
 use Ogzhncrt\DateRangeHelper\DateRange;
 
-$range = DateRange::from('2024-01-01')->to('2024-12-31');
-
-$range->contains(new DateTime('2024-06-01')); // true
-$range->contains(new DateTime('2025-01-01')); // false
-
+$range = DateRange::from('2024-01-01')->to('2024-01-10');
 ```
 
-## Test
+---
+
+### 🔍 Check if a Date is Within the Range
+
+```php
+$range->contains(new DateTime('2024-01-05')); // true
+$range->contains(new DateTime('2024-02-01')); // false
+```
+
+---
+
+### 🔁 Shift Range Forward or Backward
+
+```php
+$shifted = $range->shift(3);   // Jan 4 – Jan 13
+$backward = $range->shift(-2); // Dec 30 – Jan 8
+```
+
+---
+
+### 📏 Get Range Duration (in days)
+
+```php
+$range->durationInDays(); // 10 (inclusive)
+```
+
+---
+
+### 🔗 Check if Two Ranges Overlap
+
+```php
+$other = DateRange::from('2024-01-08')->to('2024-01-15');
+$range->overlaps($other); // true
+```
+
+---
+
+## 🧰 DateRangeUtils
+
+### 📚 Sort Ranges by Start Date
+
+```php
+use Ogzhncrt\DateRangeHelper\DateRangeUtils;
+
+$r1 = DateRange::from('2024-01-10')->to('2024-01-20');
+$r2 = DateRange::from('2024-01-01')->to('2024-01-05');
+
+$sorted = DateRangeUtils::sortRangesByStart([$r1, $r2]);
+// Result: [$r2, $r1]
+```
+
+---
+
+### 🧪 Merge Overlapping or Adjacent Ranges
+
+```php
+$a = DateRange::from('2024-01-01')->to('2024-01-10');
+$b = DateRange::from('2024-01-08')->to('2024-01-15');
+$c = DateRange::from('2024-01-20')->to('2024-01-25');
+
+$merged = DateRangeUtils::mergeRanges([$a, $b, $c]);
+// Result: [DateRange('2024-01-01', '2024-01-15'), DateRange('2024-01-20', '2024-01-25')]
+```
+
+---
+
+## 🧪 Testing
+
 ```bash
 ./vendor/bin/phpunit
 ```
+
+---
+
+## 📄 License
+
+MIT
