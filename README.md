@@ -111,15 +111,66 @@ BusinessDayConfig::addHolidays(['2024-12-25', '2024-12-26']);
 // Load predefined holiday calendar
 BusinessDayConfig::loadHolidayCalendar('US'); // US, EU, TR available
 
-// Business day operations
-$range = DateRange::from('2024-01-01')->to('2024-01-07');
-echo $range->businessDaysInRange(); // 5 (excluding weekends)
+// Load holidays from API (recommended)
+BusinessDayConfig::loadHolidaysFromAPI('US', 2024); // Any country, any year
 
-$shifted = $range->shiftBusinessDays(2); // Shift by 2 business days
-$expanded = $range->expandToBusinessDays(); // Expand to business days only
+// Business day operations (automatic holiday loading)
+$range = DateRange::from('2024-01-01')->to('2024-01-07');
+echo $range->businessDaysInRange(); // Automatically loads holidays for the range
+echo $range->businessDaysInRange('US'); // Specify country for holidays
+
+$shifted = $range->shiftBusinessDays(2, 'US'); // Shift by 2 business days
+$expanded = $range->expandToBusinessDays('US'); // Expand to business days only
 
 // Get business day periods
-$businessRanges = $range->getBusinessDayRanges(); // Array of business day periods
+$businessRanges = $range->getBusinessDayRanges('US'); // Array of business day periods
+
+// Multi-year ranges automatically load holidays for all years
+$longRange = DateRange::from('2023-01-01')->to('2024-12-31');
+echo $longRange->businessDaysInRange('US'); // Loads holidays for 2023 and 2024
+```
+
+---
+
+### 🌍 Holiday API Integration
+
+The library supports dynamic holiday data via external APIs:
+
+```php
+use Ogzhncrt\DateRangeHelper\Config\HolidayAPI;
+
+// Configure API (optional)
+HolidayAPI::setPreferredAPI('nager'); // Free API, no key required
+HolidayAPI::setApiKey('your-key'); // For Calendarific API
+
+// Get holidays for any country
+$holidays = HolidayAPI::getHolidays('US', 2024);
+$holidays = HolidayAPI::getHolidays('FR', 2024); // France
+$holidays = HolidayAPI::getHolidays('DE', 2024); // Germany
+
+// Supported APIs:
+// - Nager.Date API: 90+ countries, free, no API key
+// - Calendarific API: 230+ countries, requires API key
+```
+
+---
+
+### 🔄 Automatic Holiday Loading
+
+The library automatically loads holidays for date ranges:
+
+```php
+// Environment variable for default country
+export DATE_RANGE_HELPER_COUNTRY="US"
+
+// Automatic holiday loading for any range
+$range = DateRange::from('2024-01-01')->to('2024-01-31');
+echo $range->businessDaysInRange(); // Uses default country (US)
+echo $range->businessDaysInRange('FR'); // Uses specific country
+
+// Multi-year ranges automatically load holidays for all years
+$longRange = DateRange::from('2022-01-01')->to('2024-12-31');
+echo $longRange->businessDaysInRange('US'); // Loads holidays for 2022, 2023, 2024
 ```
 
 ---

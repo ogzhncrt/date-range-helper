@@ -2,6 +2,8 @@
 
 namespace Ogzhncrt\DateRangeHelper\Config;
 
+use Ogzhncrt\DateRangeHelper\Config\HolidayAPI;
+
 class BusinessDayConfig
 {
     private static array $weekendDays = [6, 7]; // Saturday (6) and Sunday (7) by default
@@ -111,6 +113,21 @@ class BusinessDayConfig
     public static function loadHolidayCalendar(string $calendar): void
     {
         $holidays = self::getPredefinedHolidays($calendar);
+        if (!empty($holidays)) {
+            self::addHolidays($holidays);
+        }
+    }
+
+    /**
+     * Load holidays from API for a specific country and year
+     * 
+     * @param string $countryCode ISO 3166-1 alpha-2 country code
+     * @param int $year Year to get holidays for
+     * @return void
+     */
+    public static function loadHolidaysFromAPI(string $countryCode, int $year): void
+    {
+        $holidays = HolidayAPI::getHolidays($countryCode, $year);
         if (!empty($holidays)) {
             self::addHolidays($holidays);
         }
@@ -244,6 +261,16 @@ class BusinessDayConfig
         ];
         
         return $calendars[$calendar] ?? [];
+    }
+
+    /**
+     * Get the default country from environment variable
+     * 
+     * @return string Default country code
+     */
+    public static function getDefaultCountry(): string
+    {
+        return $_ENV['DATE_RANGE_HELPER_COUNTRY'] ?? $_SERVER['DATE_RANGE_HELPER_COUNTRY'] ?? 'US';
     }
 
     /**

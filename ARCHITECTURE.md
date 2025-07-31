@@ -8,7 +8,8 @@ src/
 ├── DateRangeUtils.php     # Utility functions for range operations
 └── Config/               # Configuration classes
     ├── TimezoneConfig.php    # Timezone configuration
-    └── BusinessDayConfig.php # Business day configuration
+    ├── BusinessDayConfig.php # Business day configuration
+    └── HolidayAPI.php        # Holiday API integration
 ```
 
 ## 🎯 Design Principles
@@ -47,7 +48,13 @@ Ogzhncrt\DateRangeHelper\          # Main namespace
 - **Purpose**: Manages business day calculations and holiday settings
 - **Environment Variables**: `DATE_RANGE_HELPER_WEEKEND_DAYS`, `DATE_RANGE_HELPER_HOLIDAYS`
 - **Default**: Saturday and Sunday as weekends
-- **Key Methods**: `isBusinessDay()`, `addHoliday()`, `loadHolidayCalendar()`
+- **Key Methods**: `isBusinessDay()`, `addHoliday()`, `loadHolidayCalendar()`, `loadHolidaysFromAPI()`
+
+### HolidayAPI
+- **Purpose**: Provides dynamic holiday data via external APIs
+- **APIs**: Nager.Date (free, 90+ countries), Calendarific (paid, 230+ countries)
+- **Features**: Caching, fallback to local data, country validation
+- **Key Methods**: `getHolidays()`, `setPreferredAPI()`, `setApiKey()`
 
 ## 🚀 Benefits of This Structure
 

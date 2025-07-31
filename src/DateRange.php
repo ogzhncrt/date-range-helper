@@ -127,36 +127,66 @@ class DateRange
     }
 
     /**
+     * Automatically load holidays for all years in this date range
+     * 
+     * @param string|null $countryCode ISO country code (optional, uses default if not provided)
+     * @return void
+     */
+    private function ensureHolidaysLoaded(?string $countryCode = null): void
+    {
+        // Get the years covered by this range
+        $startYear = (int) $this->start->format('Y');
+        $endYear = (int) $this->end->format('Y');
+        
+        // Load holidays for each year in the range
+        for ($year = $startYear; $year <= $endYear; $year++) {
+            if ($countryCode) {
+                BusinessDayConfig::loadHolidaysFromAPI($countryCode, $year);
+            } else {
+                // Try to load from environment variable or use default
+                $defaultCountry = BusinessDayConfig::getDefaultCountry();
+                BusinessDayConfig::loadHolidaysFromAPI($defaultCountry, $year);
+            }
+        }
+    }
+
+    /**
      * Get the number of business days in this range
      * 
+     * @param string|null $countryCode ISO country code (optional)
      * @return int Number of business days
      */
-    public function businessDaysInRange(): int
+    public function businessDaysInRange(?string $countryCode = null): int
     {
+        $this->ensureHolidaysLoaded($countryCode);
         return BusinessDayConfig::countBusinessDays($this->start, $this->end);
     }
 
     /**
      * Get the number of non-business days in this range
      * 
+     * @param string|null $countryCode ISO country code (optional)
      * @return int Number of non-business days
      */
-    public function nonBusinessDaysInRange(): int
+    public function nonBusinessDaysInRange(?string $countryCode = null): int
     {
-        return $this->durationInDays() - $this->businessDaysInRange();
+        return $this->durationInDays() - $this->businessDaysInRange($countryCode);
     }
 
     /**
      * Shift the range by a specified number of business days
      * 
      * @param int $businessDays Number of business days to shift (positive or negative)
+     * @param string|null $countryCode ISO country code (optional)
      * @return self New DateRange shifted by business days
      */
-    public function shiftBusinessDays(int $businessDays): self
+    public function shiftBusinessDays(int $businessDays, ?string $countryCode = null): self
     {
         if ($businessDays === 0) {
             return $this;
         }
+
+        $this->ensureHolidaysLoaded($countryCode);
 
         $newStart = $this->start;
         $newEnd = $this->end;
@@ -181,10 +211,13 @@ class DateRange
     /**
      * Expand the range to include only business days
      * 
+     * @param string|null $countryCode ISO country code (optional)
      * @return self New DateRange expanded to business days only
      */
-    public function expandToBusinessDays(): self
+    public function expandToBusinessDays(?string $countryCode = null): self
     {
+        $this->ensureHolidaysLoaded($countryCode);
+
         $newStart = $this->start;
         $newEnd = $this->end;
 
@@ -204,10 +237,13 @@ class DateRange
     /**
      * Get business day ranges within this range
      * 
+     * @param string|null $countryCode ISO country code (optional)
      * @return array Array of DateRange objects representing business day periods
      */
-    public function getBusinessDayRanges(): array
+    public function getBusinessDayRanges(?string $countryCode = null): array
     {
+        $this->ensureHolidaysLoaded($countryCode);
+
         $ranges = [];
         $current = $this->start;
         $startOfBusinessPeriod = null;
@@ -237,10 +273,13 @@ class DateRange
     /**
      * Check if the entire range consists of business days only
      * 
+     * @param string|null $countryCode ISO country code (optional)
      * @return bool True if all days in range are business days
      */
-    public function isBusinessDaysOnly(): bool
+    public function isBusinessDaysOnly(?string $countryCode = null): bool
     {
+        $this->ensureHolidaysLoaded($countryCode);
+        
         $current = $this->start;
         
         while ($current <= $this->end) {

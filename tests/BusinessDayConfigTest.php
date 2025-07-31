@@ -145,6 +145,14 @@ class BusinessDayConfigTest extends TestCase
         $this->assertEmpty($holidays);
     }
 
+    public function testLoadHolidaysFromAPI()
+    {
+        BusinessDayConfig::loadHolidaysFromAPI('US', 2024);
+        $holidays = BusinessDayConfig::getHolidays();
+        $this->assertNotEmpty($holidays);
+        $this->assertContains('2024-01-01', $holidays); // New Year's Day
+    }
+
     public function testCustomWeekendConfiguration()
     {
         // Set Friday and Saturday as weekends (common in some countries)
@@ -157,5 +165,11 @@ class BusinessDayConfigTest extends TestCase
         $this->assertFalse(BusinessDayConfig::isBusinessDay($friday));
         $this->assertFalse(BusinessDayConfig::isBusinessDay($saturday));
         $this->assertTrue(BusinessDayConfig::isBusinessDay($sunday));
+    }
+
+    public function testGetDefaultCountry()
+    {
+        $defaultCountry = BusinessDayConfig::getDefaultCountry();
+        $this->assertEquals('US', $defaultCountry);
     }
 } 

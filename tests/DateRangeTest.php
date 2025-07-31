@@ -151,20 +151,45 @@ class DateRangeTest extends TestCase
     public function testBusinessDaysInRange()
     {
         $range = DateRange::from('2024-01-01')->to('2024-01-07'); // Monday to Sunday
-        $this->assertEquals(5, $range->businessDaysInRange()); // Monday to Friday
+        // January 1st, 2024 is New Year's Day (holiday), so we expect 4 business days
+        $this->assertEquals(4, $range->businessDaysInRange()); // Tuesday to Friday
+    }
+
+    public function testBusinessDaysInRangeWithCountryCode()
+    {
+        $range = DateRange::from('2024-01-01')->to('2024-01-07'); // Monday to Sunday
+        // January 1st, 2024 is New Year's Day (holiday), so we expect 4 business days
+        $this->assertEquals(4, $range->businessDaysInRange('US')); // Tuesday to Friday
     }
 
     public function testBusinessDaysInRangeWithHoliday()
     {
         BusinessDayConfig::addHoliday('2024-01-02'); // Tuesday
         $range = DateRange::from('2024-01-01')->to('2024-01-05'); // Monday to Friday
-        $this->assertEquals(4, $range->businessDaysInRange()); // Monday, Wednesday, Thursday, Friday
+        // January 1st is New Year's Day (holiday), January 2nd is manually added holiday
+        // So we expect 3 business days: Monday, Wednesday, Thursday
+        $this->assertEquals(3, $range->businessDaysInRange()); // Monday, Wednesday, Thursday
+    }
+
+    public function testBusinessDaysInRangeMultiYear()
+    {
+        $range = DateRange::from('2023-12-25')->to('2024-01-05'); // Spans two years
+        $businessDays = $range->businessDaysInRange('US');
+        $this->assertGreaterThan(0, $businessDays);
     }
 
     public function testNonBusinessDaysInRange()
     {
         $range = DateRange::from('2024-01-01')->to('2024-01-07'); // Monday to Sunday
-        $this->assertEquals(2, $range->nonBusinessDaysInRange()); // Saturday and Sunday
+        // January 1st is New Year's Day (holiday), plus Saturday and Sunday
+        $this->assertEquals(3, $range->nonBusinessDaysInRange()); // New Year's Day + Saturday and Sunday
+    }
+
+    public function testNonBusinessDaysInRangeWithCountryCode()
+    {
+        $range = DateRange::from('2024-01-01')->to('2024-01-07'); // Monday to Sunday
+        // January 1st is New Year's Day (holiday), plus Saturday and Sunday
+        $this->assertEquals(3, $range->nonBusinessDaysInRange('US')); // New Year's Day + Saturday and Sunday
     }
 
     public function testShiftBusinessDaysForward()
@@ -176,12 +201,22 @@ class DateRangeTest extends TestCase
         $this->assertEquals('2024-01-05', $shifted->getEnd()->format('Y-m-d')); // Friday
     }
 
+    public function testShiftBusinessDaysWithCountryCode()
+    {
+        $range = DateRange::from('2024-01-01')->to('2024-01-03'); // Monday to Wednesday
+        $shifted = $range->shiftBusinessDays(2, 'US');
+        
+        $this->assertEquals('2024-01-03', $shifted->getStart()->format('Y-m-d')); // Wednesday
+        $this->assertEquals('2024-01-05', $shifted->getEnd()->format('Y-m-d')); // Friday
+    }
+
     public function testShiftBusinessDaysBackward()
     {
         $range = DateRange::from('2024-01-03')->to('2024-01-05'); // Wednesday to Friday
         $shifted = $range->shiftBusinessDays(-2);
         
-        $this->assertEquals('2024-01-01', $shifted->getStart()->format('Y-m-d')); // Monday
+        // January 1st is New Year's Day (holiday), so we skip to December 29th
+        $this->assertEquals('2023-12-29', $shifted->getStart()->format('Y-m-d')); // Friday
         $this->assertEquals('2024-01-03', $shifted->getEnd()->format('Y-m-d')); // Wednesday
     }
 
@@ -200,7 +235,8 @@ class DateRangeTest extends TestCase
         $businessRanges = $range->getBusinessDayRanges();
         
         $this->assertCount(1, $businessRanges);
-        $this->assertEquals('2024-01-01', $businessRanges[0]->getStart()->format('Y-m-d')); // Monday
+        // January 1st is New Year's Day (holiday), so business days start from January 2nd
+        $this->assertEquals('2024-01-02', $businessRanges[0]->getStart()->format('Y-m-d')); // Tuesday
         $this->assertEquals('2024-01-05', $businessRanges[0]->getEnd()->format('Y-m-d')); // Friday
     }
 
@@ -211,7 +247,8 @@ class DateRangeTest extends TestCase
         $businessRanges = $range->getBusinessDayRanges();
         
         $this->assertCount(2, $businessRanges);
-        $this->assertEquals('2024-01-01', $businessRanges[0]->getStart()->format('Y-m-d')); // Monday
+        // January 1st is New Year's Day (holiday), so first period starts from January 2nd
+        $this->assertEquals('2024-01-02', $businessRanges[0]->getStart()->format('Y-m-d')); // Tuesday
         $this->assertEquals('2024-01-02', $businessRanges[0]->getEnd()->format('Y-m-d')); // Tuesday
         $this->assertEquals('2024-01-04', $businessRanges[1]->getStart()->format('Y-m-d')); // Thursday
         $this->assertEquals('2024-01-05', $businessRanges[1]->getEnd()->format('Y-m-d')); // Friday
@@ -219,8 +256,13 @@ class DateRangeTest extends TestCase
 
     public function testIsBusinessDaysOnly()
     {
+        // January 1st is New Year's Day (holiday), so this range is not business days only
         $businessRange = DateRange::from('2024-01-01')->to('2024-01-05'); // Monday to Friday
-        $this->assertTrue($businessRange->isBusinessDaysOnly());
+        $this->assertFalse($businessRange->isBusinessDaysOnly());
+        
+        // January 2nd to January 5th are business days (Tuesday to Friday)
+        $businessRange2 = DateRange::from('2024-01-02')->to('2024-01-05'); // Tuesday to Friday
+        $this->assertTrue($businessRange2->isBusinessDaysOnly());
         
         $mixedRange = DateRange::from('2024-01-01')->to('2024-01-07'); // Monday to Sunday
         $this->assertFalse($mixedRange->isBusinessDaysOnly());
