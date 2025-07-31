@@ -14,6 +14,8 @@
         "date-range",
         "date-range-helper",
         "timezone",
+        "business-days",
+        "holidays",
         "php"
     ],
     "authors": [

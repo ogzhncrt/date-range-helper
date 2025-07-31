@@ -1,7 +1,7 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Ogzhncrt\DateRangeHelper\TimezoneConfig;
+use Ogzhncrt\DateRangeHelper\Config\TimezoneConfig;
 
 class TimezoneConfigTest extends TestCase
 {

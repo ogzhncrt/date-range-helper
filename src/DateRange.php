@@ -3,7 +3,8 @@
 namespace Ogzhncrt\DateRangeHelper;
 
 use DateTimeInterface;
-use Ogzhncrt\DateRangeHelper\TimezoneConfig;
+use Ogzhncrt\DateRangeHelper\Config\TimezoneConfig;
+use Ogzhncrt\DateRangeHelper\Config\BusinessDayConfig;
 
 class DateRange
 {
@@ -123,5 +124,132 @@ class DateRange
     public static function getConfiguredTimezone(): string
     {
         return TimezoneConfig::getTimezone();
+    }
+
+    /**
+     * Get the number of business days in this range
+     * 
+     * @return int Number of business days
+     */
+    public function businessDaysInRange(): int
+    {
+        return BusinessDayConfig::countBusinessDays($this->start, $this->end);
+    }
+
+    /**
+     * Get the number of non-business days in this range
+     * 
+     * @return int Number of non-business days
+     */
+    public function nonBusinessDaysInRange(): int
+    {
+        return $this->durationInDays() - $this->businessDaysInRange();
+    }
+
+    /**
+     * Shift the range by a specified number of business days
+     * 
+     * @param int $businessDays Number of business days to shift (positive or negative)
+     * @return self New DateRange shifted by business days
+     */
+    public function shiftBusinessDays(int $businessDays): self
+    {
+        if ($businessDays === 0) {
+            return $this;
+        }
+
+        $newStart = $this->start;
+        $newEnd = $this->end;
+
+        if ($businessDays > 0) {
+            // Shift forward
+            for ($i = 0; $i < $businessDays; $i++) {
+                $newStart = BusinessDayConfig::getNextBusinessDay($newStart);
+                $newEnd = BusinessDayConfig::getNextBusinessDay($newEnd);
+            }
+        } else {
+            // Shift backward
+            for ($i = 0; $i < abs($businessDays); $i++) {
+                $newStart = BusinessDayConfig::getPreviousBusinessDay($newStart);
+                $newEnd = BusinessDayConfig::getPreviousBusinessDay($newEnd);
+            }
+        }
+
+        return new self($newStart, $newEnd);
+    }
+
+    /**
+     * Expand the range to include only business days
+     * 
+     * @return self New DateRange expanded to business days only
+     */
+    public function expandToBusinessDays(): self
+    {
+        $newStart = $this->start;
+        $newEnd = $this->end;
+
+        // Adjust start to next business day if it's not a business day
+        while (!BusinessDayConfig::isBusinessDay($newStart)) {
+            $newStart = BusinessDayConfig::getNextBusinessDay($newStart);
+        }
+
+        // Adjust end to previous business day if it's not a business day
+        while (!BusinessDayConfig::isBusinessDay($newEnd)) {
+            $newEnd = BusinessDayConfig::getPreviousBusinessDay($newEnd);
+        }
+
+        return new self($newStart, $newEnd);
+    }
+
+    /**
+     * Get business day ranges within this range
+     * 
+     * @return array Array of DateRange objects representing business day periods
+     */
+    public function getBusinessDayRanges(): array
+    {
+        $ranges = [];
+        $current = $this->start;
+        $startOfBusinessPeriod = null;
+
+        while ($current <= $this->end) {
+            if (BusinessDayConfig::isBusinessDay($current)) {
+                if ($startOfBusinessPeriod === null) {
+                    $startOfBusinessPeriod = $current;
+                }
+            } else {
+                if ($startOfBusinessPeriod !== null) {
+                    $ranges[] = new self($startOfBusinessPeriod, $current->modify('-1 day'));
+                    $startOfBusinessPeriod = null;
+                }
+            }
+            $current = $current->modify('+1 day');
+        }
+
+        // Handle case where range ends on a business day
+        if ($startOfBusinessPeriod !== null) {
+            $ranges[] = new self($startOfBusinessPeriod, $this->end);
+        }
+
+        return $ranges;
+    }
+
+    /**
+     * Check if the entire range consists of business days only
+     * 
+     * @return bool True if all days in range are business days
+     */
+    public function isBusinessDaysOnly(): bool
+    {
+        $current = $this->start;
+        
+        while ($current <= $this->end) {
+            if (!BusinessDayConfig::isBusinessDay($current)) {
+                return false;
+            }
+            $current = $current->modify('+1 day');
+        }
+        
+        return true;
     }
 }

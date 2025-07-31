@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Ogzhncrt\DateRangeHelper\DateRange;
-use Ogzhncrt\DateRangeHelper\TimezoneConfig;
+use Ogzhncrt\DateRangeHelper\Config\TimezoneConfig;
 
 echo "=== Date Range Helper Timezone Example ===\n\n";
 

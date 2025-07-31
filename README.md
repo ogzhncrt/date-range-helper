@@ -20,6 +20,7 @@ composer require ogzhncrt/date-range-helper
 - Range math (`shift`, `durationInDays`)
 - Utility class `DateRangeUtils` for sorting & merging ranges
 - **Timezone support** with environment variable configuration
+- **Business day calculations** with holiday and weekend support
 
 ---
 
@@ -89,6 +90,36 @@ $utcRange = $range->toTimezone('UTC');
 
 // Get current configured timezone
 echo DateRange::getConfiguredTimezone(); // "America/New_York"
+```
+
+---
+
+### 💼 Business Day Calculations
+
+The library supports business day calculations with configurable weekends and holidays:
+
+```php
+use Ogzhncrt\DateRangeHelper\Config\BusinessDayConfig;
+
+// Configure weekends (Friday and Saturday)
+BusinessDayConfig::setWeekendDays([5, 6]);
+
+// Add holidays
+BusinessDayConfig::addHoliday('2024-01-01');
+BusinessDayConfig::addHolidays(['2024-12-25', '2024-12-26']);
+
+// Load predefined holiday calendar
+BusinessDayConfig::loadHolidayCalendar('US'); // US, EU, TR available
+
+// Business day operations
+$range = DateRange::from('2024-01-01')->to('2024-01-07');
+echo $range->businessDaysInRange(); // 5 (excluding weekends)
+
+$shifted = $range->shiftBusinessDays(2); // Shift by 2 business days
+$expanded = $range->expandToBusinessDays(); // Expand to business days only
+
+// Get business day periods
+$businessRanges = $range->getBusinessDayRanges(); // Array of business day periods
 ```
 
 ---

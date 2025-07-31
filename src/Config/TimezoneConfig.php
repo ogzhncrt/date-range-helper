@@ -1,6 +1,6 @@
 <?php
 
-namespace Ogzhncrt\DateRangeHelper;
+namespace Ogzhncrt\DateRangeHelper\Config;
 
 class TimezoneConfig
 {
