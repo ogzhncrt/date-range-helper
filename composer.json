@@ -13,6 +13,7 @@
         "range",
         "date-range",
         "date-range-helper",
+        "timezone",
         "php"
     ],
     "authors": [

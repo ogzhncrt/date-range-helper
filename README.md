@@ -19,6 +19,7 @@ composer require ogzhncrt/date-range-helper
 - Range comparison (`contains`, `overlaps`)
 - Range math (`shift`, `durationInDays`)
 - Utility class `DateRangeUtils` for sorting & merging ranges
+- **Timezone support** with environment variable configuration
 
 ---
 
@@ -65,6 +66,29 @@ $range->durationInDays(); // 10 (inclusive)
 ```php
 $other = DateRange::from('2024-01-08')->to('2024-01-15');
 $range->overlaps($other); // true
+```
+
+---
+
+### 🌍 Timezone Support
+
+The library supports timezone configuration via environment variable `DATE_RANGE_HELPER_TIMEZONE`:
+
+```bash
+# Set timezone in your environment
+export DATE_RANGE_HELPER_TIMEZONE="America/New_York"
+```
+
+```php
+// All date ranges will use the configured timezone
+$range = DateRange::from('2024-01-01')->to('2024-01-10');
+echo $range->getTimezone(); // "America/New_York"
+
+// Convert to different timezone
+$utcRange = $range->toTimezone('UTC');
+
+// Get current configured timezone
+echo DateRange::getConfiguredTimezone(); // "America/New_York"
 ```
 
 ---
